@@ -1,0 +1,1 @@
+{"name":"sbt","version":"1.6.2","bspVersion":"2.0.0-M5","languages":["scala"],"argv":["/home/tungtv/.jdks/temurin-11.0.14.1/bin/java","-Xms100m","-Xmx100m","-classpath","/home/tungtv/.local/share/JetBrains/Toolbox/apps/IDEA-U/ch-0/221.5080.210.plugins/Scala/launcher/sbt-launch.jar","-Dsbt.script=/usr/bin/sbt","xsbt.boot.Boot","-bsp"]}
