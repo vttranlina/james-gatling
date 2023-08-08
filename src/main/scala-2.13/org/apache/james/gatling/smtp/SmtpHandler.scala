@@ -3,7 +3,6 @@ package org.apache.james.gatling.smtp
 import akka.actor.{ActorRef, Props}
 import io.gatling.commons.stats.{KO, OK}
 import io.gatling.core.Predef.Status
-import io.gatling.core.akka.BaseActor
 import io.gatling.core.session.Session
 import io.gatling.core.stats.message.ResponseTimings
 

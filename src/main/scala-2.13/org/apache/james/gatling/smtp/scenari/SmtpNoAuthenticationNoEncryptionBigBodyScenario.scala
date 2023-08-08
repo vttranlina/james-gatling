@@ -19,7 +19,7 @@ class SmtpNoAuthenticationNoEncryptionBigBodyScenario extends App {
     scenario("SMTP_No_Authentication_No_Encryption_Big_Body")
     .feed(feeder)
     .pause(1.second)
-    .during(duration) {
+    .during(duration.toSeconds.toInt) {
       exec(smtp("sendBigMail")
         .subject("subject")
         .body(generateMessage()))
