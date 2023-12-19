@@ -2,7 +2,7 @@ package org.apache.james.gatling.imap.scenari
 
 import com.linagora.gatling.imap.PreDef.{hasFolder, imap, ok}
 import com.linagora.gatling.imap.protocol.command.FetchAttributes.AttributeList
-import com.linagora.gatling.imap.protocol.command.MessageRange.{Last, Range}
+import com.linagora.gatling.imap.protocol.command.MessageRange.{From, Last, Range}
 import com.linagora.gatling.imap.protocol.command.{MessageRanges, Silent, StoreFlags}
 import com.linagora.gatling.imap.protocol.{Messages, Recent, StatusItems, UidNext, Unseen}
 import io.gatling.core.Predef._
@@ -12,8 +12,9 @@ import javax.mail.search.FlagTerm
 import org.apache.james.gatling.control.UserFeeder.UserFeederBuilder
 
 import scala.concurrent.duration._
+import scala.util.Random
 
-class PlatformValidationScenario(minWaitDelay: FiniteDuration = 2 seconds, maxWaitDelay: FiniteDuration = 18 seconds)  {
+class PlatformValidationScenario(minWaitDelay: FiniteDuration = 1 seconds, maxWaitDelay: FiniteDuration = 9 seconds) {
 
   val initialConnection: ChainBuilder = group("initialConnection")(
     exec(imap("Connect").connect()).exitHereIfFailed
@@ -34,8 +35,8 @@ class PlatformValidationScenario(minWaitDelay: FiniteDuration = 2 seconds, maxWa
 
   val coreActions: ChainBuilder = group("coreActions")(
     randomSwitch(
-      30.0 -> exec(imap("status").status("INBOX", StatusItems(Seq(UidNext, Messages, Unseen, Recent))).check(ok)),
-      15.0 -> exec(imap("idle").idle().check(ok)),
+      20.0 -> exec(imap("status").status("INBOX", StatusItems(Seq(UidNext, Messages, Unseen, Recent))).check(ok)),
+      5.0 -> exec(imap("idle").idle().check(ok)),
       9.0 -> exec(imap("getQuotaRoot").getQuotaRoot("INBOX").check(ok)),
       8.0 -> exec(ImapCommonSteps.receiveEmail), // Higher probability that what is seen in the wild to replace SMTP for message delivery
       8.0 -> exec(imap("noop").noop().check(ok)),
@@ -45,6 +46,10 @@ class PlatformValidationScenario(minWaitDelay: FiniteDuration = 2 seconds, maxWa
       2.0 -> exec(imap("searchDeleted").uidSearch(MessageRanges(Range(1, 100000)), new FlagTerm(new Flags(Flags.Flag.DELETED), false)).check(ok)),
       2.0 -> exec(imap("select").select("INBOX").check(ok)),
       2.0 -> exec(imap("store").store(MessageRanges(Last()), StoreFlags.add(Silent.Enable(), "\\Seen")).check(ok)),
+      6.0 -> exec(imap("singleFlagsAdd").store(_ => MessageRanges(Last()), StoreFlags.add(Silent.Enable(), "singleFlagsAdd" + Random.nextInt(5000) + " singleFlagsAdd" + Random.nextInt(5000) + " singleFlagsAdd" + Random.nextInt(5000))).check(ok)),
+      4.0 -> exec(imap("rangeFlagsAdd").store(MessageRanges(From(1L)), StoreFlags.add(Silent.Enable(), "rangeFlagsAdd" + Random.nextInt(3000) + " rangeFlagsAdd" + Random.nextInt(2000) + " rangeFlagsAdd" + Random.nextInt(2000))).check(ok)),
+      6.0 -> exec(imap("singleFlagsRemove").store(_ => MessageRanges(Last()), StoreFlags.add(Silent.Enable(), "singleFlagsRemove" + Random.nextInt(5000) + " singleFlagsRemove" + Random.nextInt(5000) + " singleFlagsRemove" + Random.nextInt(5000))).check(ok)),
+      4.0 -> exec(imap("rangeFlagsRemove").store(MessageRanges(From(1L)), StoreFlags.add(Silent.Enable(), "rangeFlagsRemove" + Random.nextInt(3000) + " rangeFlagsRemove" + Random.nextInt(2000) + " rangeFlagsRemove" + Random.nextInt(2000))).check(ok)),
       1.0 -> exec(imap("list").list("", "*").check(ok, hasFolder("INBOX"))),
       1.0 -> exec(imap("unselect").unselect().check(ok))
         .exec(imap("select").select("INBOX").check(ok)).exitHereIfFailed,
